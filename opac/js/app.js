@@ -42,9 +42,9 @@ const renderRecent = () => {
 const renderCatalog = (query = '') => {
   const q = query.toLowerCase().trim();
   const filtered = catalog.filter((x) =>
-    [x.title, x.author, x.isbn, x.callNumber]
+    [x.title, x.author, x.isbn, x.callNumber, x.publisher, x.publicationYear, x.language, x.series, ...(x.subjects || [])]
       .filter(Boolean)
-      .some((field) => field.toLowerCase().includes(q))
+      .some((field) => String(field).toLowerCase().includes(q))
   );
 
   const tbody = byId('catalogResults').querySelector('tbody');

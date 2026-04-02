@@ -16,6 +16,9 @@ Both sites share the same visual language through `shared/styles.css` and use br
   - "Items needing attention" list.
 - Circulation check-in/check-out workflow (scan patron + item barcode).
 - Cataloging form to add new items.
+  - Expanded bibliographic fields (edition, publisher, publication year, language, subjects, series, copy count, location, local notes).
+  - Editable item records from the catalog table.
+  - ISBN metadata import (Open Library) to prefill records.
 - Acquisitions workflow for orders and donation batches.
 - Patron add/edit management.
 - Interlibrary loan request tracker.

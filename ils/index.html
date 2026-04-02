@@ -74,17 +74,31 @@
         </article>
 
         <article id="cataloging" class="panel card">
-          <h2>Cataloging: Add New Item</h2>
+          <h2>Cataloging: Add, Import, and Edit Item Records</h2>
+          <p class="muted">Use ISBN import to prefill bibliographic data, then save or update the record.</p>
           <div class="form-grid">
             <input id="catTitle" placeholder="Title" />
             <input id="catAuthor" placeholder="Author" />
             <input id="catIsbn" placeholder="ISBN / Barcode" />
             <input id="catCall" placeholder="Call Number" />
+            <input id="catEdition" placeholder="Edition" />
+            <input id="catPublisher" placeholder="Publisher" />
+            <input id="catPubYear" placeholder="Publication Year" />
+            <input id="catLanguage" placeholder="Language (e.g. eng)" />
+            <input id="catSubjects" placeholder="Subjects (comma-separated)" />
+            <input id="catSeries" placeholder="Series" />
+            <input id="catCopyCount" type="number" min="1" value="1" placeholder="Copies" />
+            <input id="catLocation" placeholder="Shelf Location / Collection" />
             <select id="catType"><option>Book</option><option>Audiobook</option><option>DVD</option></select>
-            <button class="primary" id="addCatalogBtn">Add Item</button>
+            <button class="ghost" id="importIsbnBtn">Import by ISBN</button>
+            <button class="primary" id="addCatalogBtn">Save Record</button>
+            <button class="ghost" id="cancelEditCatalogBtn">Cancel Edit</button>
           </div>
+          <textarea id="catDescription" rows="3" placeholder="Description / abstract"></textarea>
+          <textarea id="catNotes" rows="3" placeholder="Local notes (provenance, condition, processing)"></textarea>
+          <p class="muted" id="catalogMessage"></p>
           <table class="table" id="catalogTable">
-            <thead><tr><th>Title</th><th>Author</th><th>Status</th><th>Added</th></tr></thead>
+            <thead><tr><th>Title</th><th>Author</th><th>ISBN</th><th>Type</th><th>Status</th><th>Added</th><th>Edit</th></tr></thead>
             <tbody></tbody>
           </table>
         </article>
