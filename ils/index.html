@@ -112,7 +112,20 @@
             <select id="acqStatus"><option>Requested</option><option>On Order</option><option>Received</option><option>Invoiced</option></select>
             <button class="primary" id="addAcqBtn">Add Workflow Item</button>
           </div>
-          <table class="table" id="acqTable"><thead><tr><th>Type</th><th>Vendor/Donor</th><th>Title</th><th>Status</th></tr></thead><tbody></tbody></table>
+          <table class="table" id="acqTable"><thead><tr><th>Type</th><th>Vendor/Donor</th><th>Title</th><th>Status</th><th>Pending Items</th></tr></thead><tbody></tbody></table>
+          <h3 style="margin-top:1rem">Add Pending Item to Order/Batch</h3>
+          <div class="form-grid">
+            <select id="acqItemOrder"></select>
+            <input id="acqItemTitle" placeholder="Item title" />
+            <input id="acqItemAuthor" placeholder="Item author" />
+            <input id="acqItemIsbn" placeholder="Item ISBN / Barcode" />
+            <select id="acqItemType"><option>Book</option><option>Audiobook</option><option>DVD</option></select>
+            <button class="primary" id="addAcqItemBtn">Add Pending Item</button>
+          </div>
+          <table class="table" id="acqItemsTable">
+            <thead><tr><th>Order/Batch</th><th>Title</th><th>Author</th><th>ISBN</th><th>Status</th><th>Add</th></tr></thead>
+            <tbody></tbody>
+          </table>
         </article>
 
         <article id="patrons" class="panel card">
