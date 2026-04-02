@@ -172,13 +172,62 @@
 
         <article id="reports" class="panel card">
           <h2>Reports</h2>
-          <ul>
-            <li>Total Items in Catalog: <strong id="reportItems">0</strong></li>
-            <li>Total Active Patrons: <strong id="reportPatrons">0</strong></li>
-            <li>Total Transactions Logged Today: <strong id="reportTransactions">0</strong></li>
-            <li>Open Acquisitions Workflows: <strong id="reportAcq">0</strong></li>
-          </ul>
-          <p class="muted">This sample dashboard is designed for expansion into printable and scheduled reports.</p>
+          <p class="muted">Choose a report category card to view all reports in that group.</p>
+          <div class="report-category-grid" id="reportCategoryGrid">
+            <button class="report-category-card active" data-report-category="collection">
+              <span class="report-category-title">Collection</span>
+              <span class="muted">Inventory, availability, and growth</span>
+            </button>
+            <button class="report-category-card" data-report-category="circulation">
+              <span class="report-category-title">Circulation</span>
+              <span class="muted">Checkouts and daily activity</span>
+            </button>
+            <button class="report-category-card" data-report-category="patron-services">
+              <span class="report-category-title">Patron Services</span>
+              <span class="muted">Members, visitors, and desk support</span>
+            </button>
+            <button class="report-category-card" data-report-category="operations">
+              <span class="report-category-title">Operations</span>
+              <span class="muted">Acquisitions and interlibrary work</span>
+            </button>
+          </div>
+
+          <section class="report-category-panel active" data-report-category-panel="collection">
+            <h3>Collection Reports</h3>
+            <ul>
+              <li>Total Items in Catalog: <strong id="reportItems">0</strong></li>
+              <li>Available Items: <strong id="reportAvailableItems">0</strong></li>
+              <li>Checked Out Items: <strong id="reportCheckedOutItems">0</strong></li>
+              <li>New Items Added Today: <strong id="reportNewItems">0</strong></li>
+            </ul>
+          </section>
+
+          <section class="report-category-panel" data-report-category-panel="circulation">
+            <h3>Circulation Reports</h3>
+            <ul>
+              <li>Total Transactions Logged Today: <strong id="reportTransactions">0</strong></li>
+              <li>Check Outs Today: <strong id="reportCheckouts">0</strong></li>
+              <li>Check Ins Today: <strong id="reportCheckins">0</strong></li>
+            </ul>
+          </section>
+
+          <section class="report-category-panel" data-report-category-panel="patron-services">
+            <h3>Patron Services Reports</h3>
+            <ul>
+              <li>Total Patrons: <strong id="reportTotalPatrons">0</strong></li>
+              <li>Total Active Patrons: <strong id="reportPatrons">0</strong></li>
+              <li>Visitors Today: <strong id="reportVisitors">0</strong></li>
+              <li>Reference Questions Today: <strong id="reportReferenceQuestions">0</strong></li>
+            </ul>
+          </section>
+
+          <section class="report-category-panel" data-report-category-panel="operations">
+            <h3>Operations Reports</h3>
+            <ul>
+              <li>Open Acquisitions Workflows: <strong id="reportAcq">0</strong></li>
+              <li>Open Interlibrary Loan Requests: <strong id="reportIllOpen">0</strong></li>
+            </ul>
+          </section>
         </article>
       </section>
     </main>
