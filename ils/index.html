@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Library ILS</title>
+  <link rel="stylesheet" href="../shared/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar card">
+      <div class="brand">
+        <h1>Evergreen Ridge Library ILS</h1>
+        <small>Integrated Library System · Staff Portal</small>
+      </div>
+      <nav class="nav-links">
+        <a href="../opac/index.html">Open OPAC</a>
+      </nav>
+    </header>
+
+    <section class="grid kpi-grid">
+      <article class="card">
+        <h3>Visitors Today</h3>
+        <div class="stat" id="visitorCount">0</div>
+        <button class="ghost" id="addVisitorBtn">+1 Visitor</button>
+      </article>
+      <article class="card">
+        <h3>Reference Questions</h3>
+        <div class="stat" id="referenceCount">0</div>
+        <button class="ghost" id="addReferenceBtn">+1 Question</button>
+      </article>
+      <article class="card"><h3>Circulation Today</h3><div class="stat" id="circulationToday">0</div></article>
+      <article class="card"><h3>New Items Added</h3><div class="stat" id="newItemsToday">0</div></article>
+      <article class="card"><h3>Pending Orders</h3><div class="stat" id="pendingOrders">0</div></article>
+    </section>
+
+    <section class="card" style="margin-top:1rem">
+      <h3>Items That Need Attention</h3>
+      <ul class="attention-list" id="attentionList"></ul>
+    </section>
+
+    <main class="layout" style="margin-top:1rem;">
+      <aside class="sidebar card">
+        <h3>Modules</h3>
+        <div class="menu" id="moduleMenu">
+          <button data-panel="circulation" class="active">Circulation</button>
+          <button data-panel="cataloging">Cataloging</button>
+          <button data-panel="acquisitions">Acquisitions</button>
+          <button data-panel="patrons">Patrons</button>
+          <button data-panel="ill">Interlibrary Loan</button>
+          <button data-panel="register">Daily Register</button>
+          <button data-panel="admin">Administration</button>
+          <button data-panel="reports">Reports</button>
+        </div>
+      </aside>
+
+      <section>
+        <article id="circulation" class="panel active card">
+          <h2>Circulation: Check In / Check Out</h2>
+          <p class="muted">Scan patron card and item barcode to perform circulation actions.</p>
+          <div class="form-grid">
+            <input id="scanPatron" placeholder="Patron card barcode" />
+            <input id="scanItem" placeholder="Item barcode / ISBN" />
+            <select id="circulationAction">
+              <option value="checkout">Check Out</option>
+              <option value="checkin">Check In</option>
+            </select>
+            <button class="primary" id="circulateBtn">Process</button>
+          </div>
+          <table class="table" id="circulationTable">
+            <thead><tr><th>Time</th><th>Patron</th><th>Item</th><th>Action</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </article>
+
+        <article id="cataloging" class="panel card">
+          <h2>Cataloging: Add New Item</h2>
+          <div class="form-grid">
+            <input id="catTitle" placeholder="Title" />
+            <input id="catAuthor" placeholder="Author" />
+            <input id="catIsbn" placeholder="ISBN / Barcode" />
+            <input id="catCall" placeholder="Call Number" />
+            <select id="catType"><option>Book</option><option>Audiobook</option><option>DVD</option></select>
+            <button class="primary" id="addCatalogBtn">Add Item</button>
+          </div>
+          <table class="table" id="catalogTable">
+            <thead><tr><th>Title</th><th>Author</th><th>Status</th><th>Added</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </article>
+
+        <article id="acquisitions" class="panel card">
+          <h2>Acquisitions: Orders & Donation Batches</h2>
+          <div class="form-grid">
+            <select id="acqType"><option value="Order">Order</option><option value="Donation">Donation Batch</option></select>
+            <input id="acqVendor" placeholder="Vendor / Donor" />
+            <input id="acqTitle" placeholder="Order or batch title" />
+            <select id="acqStatus"><option>Requested</option><option>On Order</option><option>Received</option><option>Invoiced</option></select>
+            <button class="primary" id="addAcqBtn">Add Workflow Item</button>
+          </div>
+          <table class="table" id="acqTable"><thead><tr><th>Type</th><th>Vendor/Donor</th><th>Title</th><th>Status</th></tr></thead><tbody></tbody></table>
+        </article>
+
+        <article id="patrons" class="panel card">
+          <h2>Patrons: Add & Edit Members</h2>
+          <div class="form-grid">
+            <input id="patronCard" placeholder="Card ID" />
+            <input id="patronName" placeholder="Full Name" />
+            <input id="patronEmail" placeholder="Email" />
+            <select id="patronStatus"><option>Active</option><option>Expired</option><option>Blocked</option></select>
+            <button class="primary" id="savePatronBtn">Save Patron</button>
+          </div>
+          <table class="table" id="patronTable"><thead><tr><th>Card</th><th>Name</th><th>Email</th><th>Status</th></tr></thead><tbody></tbody></table>
+        </article>
+
+        <article id="ill" class="panel card">
+          <h2>Interlibrary Loan</h2>
+          <div class="form-grid">
+            <input id="illRequester" placeholder="Requesting Patron" />
+            <input id="illTitle" placeholder="Requested Title" />
+            <input id="illLibrary" placeholder="Lending Library" />
+            <select id="illStatus"><option>Requested</option><option>Shipped</option><option>Received</option><option>Returned</option></select>
+            <button class="primary" id="addIllBtn">Add ILL Request</button>
+          </div>
+          <table class="table" id="illTable"><thead><tr><th>Patron</th><th>Title</th><th>Lender</th><th>Status</th></tr></thead><tbody></tbody></table>
+        </article>
+
+        <article id="register" class="panel card">
+          <h2>Daily Register</h2>
+          <textarea id="registerNotes" rows="5" placeholder="Daily desk notes, incidents, opening/closing notes..."></textarea>
+          <div style="margin-top:0.6rem"><button class="primary" id="saveRegisterBtn">Save Register Entry</button></div>
+          <table class="table" id="registerTable"><thead><tr><th>Date</th><th>Entry</th></tr></thead><tbody></tbody></table>
+        </article>
+
+        <article id="admin" class="panel card">
+          <h2>Administration</h2>
+          <div class="form-grid">
+            <select id="ruleProfile"><option>Standard 21-day</option><option>Media 7-day</option><option>Reference in-library use</option></select>
+            <select id="receiptMode"><option>Email + Print</option><option>Email only</option><option>Print only</option></select>
+            <input id="authorityHeading" placeholder="Authority heading (name/subject)" />
+            <button class="primary" id="saveAdminBtn">Save Administrative Settings</button>
+          </div>
+          <p id="adminMessage" class="muted"></p>
+        </article>
+
+        <article id="reports" class="panel card">
+          <h2>Reports</h2>
+          <ul>
+            <li>Total Items in Catalog: <strong id="reportItems">0</strong></li>
+            <li>Total Active Patrons: <strong id="reportPatrons">0</strong></li>
+            <li>Total Transactions Logged Today: <strong id="reportTransactions">0</strong></li>
+            <li>Open Acquisitions Workflows: <strong id="reportAcq">0</strong></li>
+          </ul>
+          <p class="muted">This sample dashboard is designed for expansion into printable and scheduled reports.</p>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="../data/catalogSeed.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Library OPAC</title>
+  <link rel="stylesheet" href="../shared/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar card">
+      <div class="brand">
+        <h1>Evergreen Ridge OPAC</h1>
+        <small>Public Catalog · Discovery-first Homepage</small>
+      </div>
+      <div class="search-inline">
+        <input id="searchInput" placeholder="Search title, author, ISBN..." />
+      </div>
+      <nav class="nav-links"><a href="../ils/index.html">Open ILS</a></nav>
+    </header>
+
+    <section class="hero">
+      <article class="card">
+        <h2>Recently Added</h2>
+        <div class="discovery-scroll" id="recentlyAdded"></div>
+      </article>
+      <article class="card">
+        <h2>Discover Something New</h2>
+        <div class="discovery-blocks">
+          <div class="book-card"><h4>Staff Picks</h4><p class="muted">Fresh recommendations by your librarians each week.</p></div>
+          <div class="book-card"><h4>Booklist Spotlight</h4><p class="muted">Browse curated lists: cozy mysteries, climate fiction, local history.</p></div>
+          <div class="book-card"><h4>Random Shelf Dive</h4><p class="muted" id="randomShelfText">Click any title below to start exploring.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="card">
+      <h2>Catalog</h2>
+      <p class="muted">Browse everything in the catalog. Click an item to view full details.</p>
+      <table class="table" id="catalogResults">
+        <thead><tr><th>Title</th><th>Author</th><th>Type</th><th>Status</th><th>Call #</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </div>
+
+  <dialog class="modal" id="itemModal">
+    <div class="modal-content">
+      <h3 id="modalTitle"></h3>
+      <p><strong>Author:</strong> <span id="modalAuthor"></span></p>
+      <p><strong>ISBN:</strong> <span id="modalIsbn"></span></p>
+      <p><strong>Call Number:</strong> <span id="modalCall"></span></p>
+      <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+      <p id="modalDescription" class="muted"></p>
+      <button class="primary" id="closeModalBtn">Close</button>
+    </div>
+  </dialog>
+
+  <script src="../data/catalogSeed.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
