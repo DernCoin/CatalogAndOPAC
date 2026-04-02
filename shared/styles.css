@@ -209,6 +209,44 @@ button.ghost {
 .attention-list li { margin-bottom: 0.45rem; }
 .attention-list .urgent { color: var(--danger); }
 .attention-list .warn { color: var(--warning); }
+.report-category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 0.8rem;
+}
+
+.report-category-card {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 0.2rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 0.75rem;
+  cursor: pointer;
+}
+
+.report-category-card.active {
+  background: #e8efff;
+  border-color: #b8cbff;
+}
+
+.report-category-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.report-category-panel {
+  display: none;
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+}
+
+.report-category-panel.active {
+  display: block;
+}
 
 .hero {
   display: grid;

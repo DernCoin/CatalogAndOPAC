@@ -111,9 +111,18 @@ const renderTables = () => {
 
 const renderReports = () => {
   byId('reportItems').textContent = state.catalog.length;
+  byId('reportAvailableItems').textContent = state.catalog.filter((x) => x.status === 'Available').length;
+  byId('reportCheckedOutItems').textContent = state.catalog.filter((x) => x.status === 'Checked Out').length;
+  byId('reportNewItems').textContent = state.catalog.filter((x) => x.addedOn === new Date().toISOString().slice(0, 10)).length;
   byId('reportPatrons').textContent = state.patrons.filter((x) => x.status === 'Active').length;
+  byId('reportTotalPatrons').textContent = state.patrons.length;
   byId('reportTransactions').textContent = state.circulationLog.length;
+  byId('reportCheckouts').textContent = state.circulationLog.filter((x) => x.action === 'Check Out').length;
+  byId('reportCheckins').textContent = state.circulationLog.filter((x) => x.action === 'Check In').length;
+  byId('reportVisitors').textContent = state.visitors;
+  byId('reportReferenceQuestions').textContent = state.referenceQuestions;
   byId('reportAcq').textContent = state.acquisitions.filter((x) => x.status !== 'Received').length;
+  byId('reportIllOpen').textContent = state.illRequests.filter((x) => x.status !== 'Returned').length;
 };
 
 const rerender = () => {
@@ -172,6 +181,16 @@ document.querySelectorAll('#moduleMenu button').forEach((btn) => {
     document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
     btn.classList.add('active');
     byId(btn.dataset.panel).classList.add('active');
+  });
+});
+
+document.querySelectorAll('.report-category-card').forEach((card) => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.report-category-card').forEach((x) => x.classList.remove('active'));
+    document.querySelectorAll('.report-category-panel').forEach((panel) => panel.classList.remove('active'));
+    card.classList.add('active');
+    const panel = document.querySelector(`[data-report-category-panel="${card.dataset.reportCategory}"]`);
+    if (panel) panel.classList.add('active');
   });
 });
 
