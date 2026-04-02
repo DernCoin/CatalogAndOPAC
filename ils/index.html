@@ -18,32 +18,12 @@
       </nav>
     </header>
 
-    <section class="grid kpi-grid">
-      <article class="card">
-        <h3>Visitors Today</h3>
-        <div class="stat" id="visitorCount">0</div>
-        <button class="ghost" id="addVisitorBtn">+1 Visitor</button>
-      </article>
-      <article class="card">
-        <h3>Reference Questions</h3>
-        <div class="stat" id="referenceCount">0</div>
-        <button class="ghost" id="addReferenceBtn">+1 Question</button>
-      </article>
-      <article class="card"><h3>Circulation Today</h3><div class="stat" id="circulationToday">0</div></article>
-      <article class="card"><h3>New Items Added</h3><div class="stat" id="newItemsToday">0</div></article>
-      <article class="card"><h3>Pending Orders</h3><div class="stat" id="pendingOrders">0</div></article>
-    </section>
-
-    <section class="card" style="margin-top:1rem">
-      <h3>Items That Need Attention</h3>
-      <ul class="attention-list" id="attentionList"></ul>
-    </section>
-
     <main class="layout" style="margin-top:1rem;">
       <aside class="sidebar card">
         <h3>Modules</h3>
         <div class="menu" id="moduleMenu">
-          <button data-panel="circulation" class="active">Circulation</button>
+          <button data-panel="dashboard" class="active">Dashboard</button>
+          <button data-panel="circulation">Circulation</button>
           <button data-panel="cataloging">Cataloging</button>
           <button data-panel="acquisitions">Acquisitions</button>
           <button data-panel="patrons">Patrons</button>
@@ -55,7 +35,31 @@
       </aside>
 
       <section>
-        <article id="circulation" class="panel active card">
+        <article id="dashboard" class="panel active card">
+          <h2>Dashboard</h2>
+          <p class="muted">Daily totals and priority follow-ups for today's operations.</p>
+          <section class="grid kpi-grid">
+            <article class="card">
+              <h3>Visitors Today</h3>
+              <div class="stat" id="visitorCount">0</div>
+              <button class="ghost" id="addVisitorBtn">+1 Visitor</button>
+            </article>
+            <article class="card">
+              <h3>Reference Questions</h3>
+              <div class="stat" id="referenceCount">0</div>
+              <button class="ghost" id="addReferenceBtn">+1 Question</button>
+            </article>
+            <article class="card"><h3>Circulation Today</h3><div class="stat" id="circulationToday">0</div></article>
+            <article class="card"><h3>New Items Added</h3><div class="stat" id="newItemsToday">0</div></article>
+            <article class="card"><h3>Pending Orders</h3><div class="stat" id="pendingOrders">0</div></article>
+          </section>
+          <section class="card" style="margin-top:1rem">
+            <h3>Items That Need Attention</h3>
+            <ul class="attention-list" id="attentionList"></ul>
+          </section>
+        </article>
+
+        <article id="circulation" class="panel card">
           <h2>Circulation: Check In / Check Out</h2>
           <p class="muted">Scan patron card and item barcode to perform circulation actions.</p>
           <div class="form-grid">
