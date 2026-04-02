@@ -65,17 +65,20 @@ const renderAttention = () => {
 };
 
 const row = (arr) => `<tr>${arr.map((c) => `<td>${c}</td>`).join('')}</tr>`;
+const coverMarkup = (url, title) => (url ? `<img src="${url}" alt="Cover for ${title}" style="width:42px;height:60px;object-fit:cover;border-radius:6px;" />` : '—');
 
 const renderTables = () => {
   byId('circulationTable').querySelector('tbody').innerHTML = state.circulationLog.slice().reverse().map((x) => row([x.time, x.patronCard, x.itemBarcode, `<span class="badge">${x.action}</span>`])).join('');
   byId('catalogTable').querySelector('tbody').innerHTML = state.catalog.slice().reverse().map((x) => row([
+    coverMarkup(x.coverImageUrl, x.title),
     x.title,
     x.author || '—',
     x.isbn || '—',
     x.materialType || 'Book',
     x.status,
     x.addedOn,
-    `<button class="ghost" data-edit-catalog-id="${x.id}">Edit</button>`
+    `<button class="ghost" data-edit-catalog-id="${x.id}">Edit</button>
+     <button class="ghost" data-delete-catalog-id="${x.id}">Weed</button>`
   ])).join('');
   byId('acqTable').querySelector('tbody').innerHTML = state.acquisitions.slice().reverse().map((x) => row([
     x.type,
@@ -103,6 +106,9 @@ const renderTables = () => {
 
   byId('catalogTable').querySelectorAll('button[data-edit-catalog-id]').forEach((btn) => {
     btn.addEventListener('click', () => beginCatalogEdit(btn.dataset.editCatalogId));
+  });
+  byId('catalogTable').querySelectorAll('button[data-delete-catalog-id]').forEach((btn) => {
+    btn.addEventListener('click', () => weedCatalogRecord(btn.dataset.deleteCatalogId));
   });
   byId('acqItemsTable').querySelectorAll('button[data-add-item-id]').forEach((btn) => {
     btn.addEventListener('click', () => addPendingItemToCatalog(btn.dataset.addItemId));
@@ -161,11 +167,14 @@ const addPendingItemToCatalog = (itemId) => {
     edition: '',
     publisher: parentAcquisition.vendor || '',
     publicationYear: '',
+    placeOfPublication: '',
+    pageCount: '',
     language: '',
     subjects: [],
     series: '',
     copyCount: 1,
     location: '',
+    coverImageUrl: '',
     description: `${item.title} by ${item.author || 'Unknown author'}.`,
     localNotes: `Added from ${parentAcquisition.type.toLowerCase()} workflow "${parentAcquisition.title}".`,
     status: 'Available',
@@ -224,8 +233,8 @@ byId('circulateBtn').addEventListener('click', () => {
 });
 
 const catalogFieldIds = [
-  'catTitle', 'catAuthor', 'catIsbn', 'catCall', 'catEdition', 'catPublisher', 'catPubYear',
-  'catLanguage', 'catSubjects', 'catSeries', 'catCopyCount', 'catLocation', 'catDescription', 'catNotes'
+  'catTitle', 'catAuthor', 'catRecordIsbn', 'catCall', 'catEdition', 'catPublisher', 'catPubPlace', 'catPubYear',
+  'catPageCount', 'catCoverUrl', 'catLanguage', 'catSubjects', 'catSeries', 'catCopyCount', 'catLocation', 'catDescription', 'catNotes'
 ];
 
 const resetCatalogForm = (clearMessage = true) => {
@@ -242,11 +251,14 @@ const beginCatalogEdit = (id) => {
   editingCatalogId = id;
   byId('catTitle').value = item.title || '';
   byId('catAuthor').value = item.author || '';
-  byId('catIsbn').value = item.isbn || '';
+  byId('catRecordIsbn').value = item.isbn || '';
   byId('catCall').value = item.callNumber || '';
   byId('catEdition').value = item.edition || '';
   byId('catPublisher').value = item.publisher || '';
+  byId('catPubPlace').value = item.placeOfPublication || '';
   byId('catPubYear').value = item.publicationYear || '';
+  byId('catPageCount').value = item.pageCount || '';
+  byId('catCoverUrl').value = item.coverImageUrl || '';
   byId('catLanguage').value = item.language || '';
   byId('catSubjects').value = Array.isArray(item.subjects) ? item.subjects.join(', ') : '';
   byId('catSeries').value = item.series || '';
@@ -263,8 +275,17 @@ const parseSubjects = (raw) => raw.split(',').map((x) => x.trim()).filter(Boolea
 
 byId('cancelEditCatalogBtn').addEventListener('click', resetCatalogForm);
 
+const weedCatalogRecord = (id) => {
+  const item = state.catalog.find((x) => x.id === id);
+  if (!item) return;
+  state.catalog = state.catalog.filter((x) => x.id !== id);
+  byId('catalogMessage').textContent = `Weeded record "${item.title}".`;
+  if (editingCatalogId === id) resetCatalogForm(false);
+  rerender();
+};
+
 byId('importIsbnBtn').addEventListener('click', async () => {
-  const rawIsbn = byId('catIsbn').value.trim();
+  const rawIsbn = byId('catImportIsbn').value.trim();
   const isbn = rawIsbn.replace(/[^0-9Xx]/g, '');
   if (!isbn) {
     byId('catalogMessage').textContent = 'Enter an ISBN first.';
@@ -288,8 +309,14 @@ byId('importIsbnBtn').addEventListener('click', async () => {
 
     byId('catTitle').value = data.title || byId('catTitle').value;
     byId('catAuthor').value = authorName;
+    byId('catRecordIsbn').value = byId('catRecordIsbn').value || isbn;
     byId('catPublisher').value = data.publishers?.[0] || byId('catPublisher').value;
+    byId('catPubPlace').value = data.publish_places?.[0] || byId('catPubPlace').value;
     byId('catPubYear').value = data.publish_date ? String(data.publish_date).match(/\d{4}/)?.[0] || '' : byId('catPubYear').value;
+    byId('catPageCount').value = data.number_of_pages || byId('catPageCount').value;
+    if (Array.isArray(data.covers) && data.covers[0]) {
+      byId('catCoverUrl').value = `https://covers.openlibrary.org/b/id/${data.covers[0]}-L.jpg`;
+    }
     byId('catLanguage').value = data.languages?.[0]?.key?.split('/').pop() || byId('catLanguage').value;
     byId('catSubjects').value = Array.isArray(data.subjects) ? data.subjects.slice(0, 8).join(', ') : byId('catSubjects').value;
     byId('catDescription').value = typeof data.description === 'string' ? data.description : (data.description?.value || byId('catDescription').value);
@@ -302,11 +329,14 @@ byId('importIsbnBtn').addEventListener('click', async () => {
 byId('addCatalogBtn').addEventListener('click', () => {
   const title = byId('catTitle').value.trim();
   const author = byId('catAuthor').value.trim();
-  const isbn = byId('catIsbn').value.trim();
+  const isbn = byId('catRecordIsbn').value.trim();
   const callNumber = byId('catCall').value.trim();
   const edition = byId('catEdition').value.trim();
   const publisher = byId('catPublisher').value.trim();
+  const placeOfPublication = byId('catPubPlace').value.trim();
   const publicationYear = byId('catPubYear').value.trim();
+  const pageCount = Number.parseInt(byId('catPageCount').value, 10) || '';
+  const coverImageUrl = byId('catCoverUrl').value.trim();
   const language = byId('catLanguage').value.trim();
   const subjects = parseSubjects(byId('catSubjects').value.trim());
   const series = byId('catSeries').value.trim();
@@ -318,8 +348,8 @@ byId('addCatalogBtn').addEventListener('click', () => {
   if (!title || !isbn) return;
 
   const payload = {
-    title, author, isbn, callNumber, materialType, edition, publisher, publicationYear, language, subjects, series,
-    copyCount, location, description: description || `${title} by ${author}.`, localNotes
+    title, author, isbn, callNumber, materialType, edition, publisher, placeOfPublication, publicationYear, pageCount,
+    coverImageUrl, language, subjects, series, copyCount, location, description: description || `${title} by ${author}.`, localNotes
   };
 
   if (editingCatalogId) {

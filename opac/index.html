@@ -46,10 +46,13 @@
 
   <dialog class="modal" id="itemModal">
     <div class="modal-content">
+      <img id="modalCover" alt="Book cover" style="width:120px;height:170px;object-fit:cover;border-radius:8px;display:none;margin-bottom:0.75rem;" />
       <h3 id="modalTitle"></h3>
       <p><strong>Author:</strong> <span id="modalAuthor"></span></p>
       <p><strong>ISBN:</strong> <span id="modalIsbn"></span></p>
       <p><strong>Call Number:</strong> <span id="modalCall"></span></p>
+      <p><strong>Place of Publication:</strong> <span id="modalPubPlace"></span></p>
+      <p><strong>Pages:</strong> <span id="modalPageCount"></span></p>
       <p><strong>Status:</strong> <span id="modalStatus"></span></p>
       <p id="modalDescription" class="muted"></p>
       <button class="primary" id="closeModalBtn">Close</button>

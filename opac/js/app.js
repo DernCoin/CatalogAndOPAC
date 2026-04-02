@@ -14,8 +14,9 @@ let catalog = getCatalog();
 
 const toRow = (item) => {
   const tr = document.createElement('tr');
+  const cover = item.coverImageUrl ? `<img src="${item.coverImageUrl}" alt="Cover for ${item.title}" style="width:32px;height:46px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:0.4rem;" />` : '';
   tr.innerHTML = `
-    <td><button class="ghost" data-id="${item.id}">${item.title}</button></td>
+    <td><button class="ghost" data-id="${item.id}">${cover}${item.title}</button></td>
     <td>${item.author || '—'}</td>
     <td>${item.materialType || 'Book'}</td>
     <td>${item.status}</td>
@@ -30,7 +31,7 @@ const renderRecent = () => {
     .slice(0, 10);
 
   byId('recentlyAdded').innerHTML = recent
-    .map((x) => `<div class="book-card"><h4>${x.title}</h4><p>${x.author || 'Unknown'}</p><small class="muted">Added ${x.addedOn || 'N/A'}</small></div>`)
+    .map((x) => `<div class="book-card">${x.coverImageUrl ? `<img src="${x.coverImageUrl}" alt="Cover for ${x.title}" style="width:64px;height:90px;object-fit:cover;border-radius:6px;" />` : ''}<h4>${x.title}</h4><p>${x.author || 'Unknown'}</p><small class="muted">Added ${x.addedOn || 'N/A'}</small></div>`)
     .join('');
 
   if (catalog.length > 0) {
@@ -59,8 +60,18 @@ const renderCatalog = (query = '') => {
       byId('modalAuthor').textContent = item.author || 'Unknown';
       byId('modalIsbn').textContent = item.isbn || 'N/A';
       byId('modalCall').textContent = item.callNumber || 'N/A';
+      byId('modalPubPlace').textContent = item.placeOfPublication || 'N/A';
+      byId('modalPageCount').textContent = item.pageCount || 'N/A';
       byId('modalStatus').textContent = item.status || 'Unknown';
       byId('modalDescription').textContent = item.description || 'No additional description available.';
+      const cover = byId('modalCover');
+      if (item.coverImageUrl) {
+        cover.src = item.coverImageUrl;
+        cover.style.display = 'block';
+      } else {
+        cover.removeAttribute('src');
+        cover.style.display = 'none';
+      }
       byId('itemModal').showModal();
     });
   });
