@@ -30,6 +30,20 @@ const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
 const byId = (id) => document.getElementById(id);
 let editingCatalogId = null;
 
+const ensureAcquisitionShape = (acquisition) => {
+  if (!acquisition.id) acquisition.id = crypto.randomUUID();
+  if (!Array.isArray(acquisition.items)) acquisition.items = [];
+  acquisition.items.forEach((item) => {
+    if (!item.id) item.id = crypto.randomUUID();
+    if (!item.itemStatus) item.itemStatus = 'Pending';
+  });
+  return acquisition;
+};
+
+const ensureStateShape = () => {
+  state.acquisitions = state.acquisitions.map(ensureAcquisitionShape);
+};
+
 const renderKPIs = () => {
   byId('visitorCount').textContent = state.visitors;
   byId('referenceCount').textContent = state.referenceQuestions;
@@ -63,13 +77,35 @@ const renderTables = () => {
     x.addedOn,
     `<button class="ghost" data-edit-catalog-id="${x.id}">Edit</button>`
   ])).join('');
-  byId('acqTable').querySelector('tbody').innerHTML = state.acquisitions.slice().reverse().map((x) => row([x.type, x.vendor, x.title, x.status])).join('');
+  byId('acqTable').querySelector('tbody').innerHTML = state.acquisitions.slice().reverse().map((x) => row([
+    x.type,
+    x.vendor,
+    x.title,
+    x.status,
+    x.items.filter((item) => item.itemStatus === 'Pending').length
+  ])).join('');
   byId('patronTable').querySelector('tbody').innerHTML = state.patrons.slice().reverse().map((x) => row([x.cardId, x.name, x.email, x.status])).join('');
   byId('illTable').querySelector('tbody').innerHTML = state.illRequests.slice().reverse().map((x) => row([x.requester, x.title, x.lender, x.status])).join('');
   byId('registerTable').querySelector('tbody').innerHTML = state.register.slice().reverse().map((x) => row([x.date, x.note])).join('');
 
+  const acqItemRows = state.acquisitions.flatMap((acq) => acq.items.map((item) => ({
+    orderLabel: `${acq.title} (${acq.vendor})`,
+    ...item
+  })));
+  byId('acqItemsTable').querySelector('tbody').innerHTML = acqItemRows.slice().reverse().map((item) => row([
+    item.orderLabel,
+    item.title,
+    item.author || '—',
+    item.isbn || '—',
+    item.itemStatus,
+    item.itemStatus === 'Pending' ? `<button class="ghost" data-add-item-id="${item.id}">Add to Catalog</button>` : 'Added'
+  ])).join('');
+
   byId('catalogTable').querySelectorAll('button[data-edit-catalog-id]').forEach((btn) => {
     btn.addEventListener('click', () => beginCatalogEdit(btn.dataset.editCatalogId));
+  });
+  byId('acqItemsTable').querySelectorAll('button[data-add-item-id]').forEach((btn) => {
+    btn.addEventListener('click', () => addPendingItemToCatalog(btn.dataset.addItemId));
   });
 };
 
@@ -81,11 +117,53 @@ const renderReports = () => {
 };
 
 const rerender = () => {
+  ensureStateShape();
   renderKPIs();
   renderAttention();
   renderTables();
   renderReports();
+  renderAcqOrderOptions();
   saveState();
+};
+
+const renderAcqOrderOptions = () => {
+  const select = byId('acqItemOrder');
+  select.innerHTML = '';
+  if (!state.acquisitions.length) {
+    select.innerHTML = '<option value="">Add an order/batch first</option>';
+    return;
+  }
+  select.innerHTML = state.acquisitions.map((acq) => `<option value="${acq.id}">${acq.title} (${acq.vendor})</option>`).join('');
+};
+
+const addPendingItemToCatalog = (itemId) => {
+  const parentAcquisition = state.acquisitions.find((acq) => acq.items.some((item) => item.id === itemId));
+  if (!parentAcquisition) return;
+  const item = parentAcquisition.items.find((x) => x.id === itemId);
+  if (!item || item.itemStatus !== 'Pending') return;
+
+  state.catalog.push({
+    id: crypto.randomUUID(),
+    title: item.title,
+    author: item.author || '',
+    isbn: item.isbn || '',
+    callNumber: '',
+    materialType: item.materialType || 'Book',
+    edition: '',
+    publisher: parentAcquisition.vendor || '',
+    publicationYear: '',
+    language: '',
+    subjects: [],
+    series: '',
+    copyCount: 1,
+    location: '',
+    description: `${item.title} by ${item.author || 'Unknown author'}.`,
+    localNotes: `Added from ${parentAcquisition.type.toLowerCase()} workflow "${parentAcquisition.title}".`,
+    status: 'Available',
+    addedOn: new Date().toISOString().slice(0, 10)
+  });
+  item.itemStatus = 'Cataloged';
+  rerender();
 };
 
 document.querySelectorAll('#moduleMenu button').forEach((btn) => {
@@ -248,8 +326,39 @@ byId('addAcqBtn').addEventListener('click', () => {
   const title = byId('acqTitle').value.trim();
   const status = byId('acqStatus').value;
   if (!vendor || !title) return;
-  state.acquisitions.push({ type, vendor, title, status });
+  state.acquisitions.push({
+    id: crypto.randomUUID(),
+    type,
+    vendor,
+    title,
+    status,
+    items: []
+  });
   ['acqVendor', 'acqTitle'].forEach((id) => (byId(id).value = ''));
+  rerender();
+});
+
+byId('addAcqItemBtn').addEventListener('click', () => {
+  const acquisitionId = byId('acqItemOrder').value;
+  const title = byId('acqItemTitle').value.trim();
+  const author = byId('acqItemAuthor').value.trim();
+  const isbn = byId('acqItemIsbn').value.trim();
+  const materialType = byId('acqItemType').value;
+  if (!acquisitionId || !title) return;
+  const acquisition = state.acquisitions.find((x) => x.id === acquisitionId);
+  if (!acquisition) return;
+
+  acquisition.items.push({
+    id: crypto.randomUUID(),
+    title,
+    author,
+    isbn,
+    materialType,
+    itemStatus: 'Pending'
+  });
+
+  ['acqItemTitle', 'acqItemAuthor', 'acqItemIsbn'].forEach((id) => (byId(id).value = ''));
+  byId('acqItemType').value = 'Book';
   rerender();
 });
 
