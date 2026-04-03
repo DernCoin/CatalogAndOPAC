@@ -2,6 +2,7 @@ const STORAGE_KEY = 'library-system-state-v1';
 
 const baseState = {
   visitors: 87,
+  visitorLog: [],
   referenceQuestions: 16,
   circulationLog: [],
   catalog: [],
@@ -45,6 +46,7 @@ const ensureAcquisitionShape = (acquisition) => {
 };
 
 const ensureStateShape = () => {
+  if (!Array.isArray(state.visitorLog)) state.visitorLog = [];
   state.acquisitions = state.acquisitions.map(ensureAcquisitionShape);
   state.catalog = state.catalog.map((item) => ({
     materialNumber: '',
@@ -191,19 +193,120 @@ const renderRegisterTotals = () => {
 };
 
 const renderReports = () => {
+  const checkouts = state.circulationLog.filter((x) => x.action === 'Check Out');
+  const checkins = state.circulationLog.filter((x) => x.action === 'Check In');
+  const uniquePatronsServed = new Set(state.circulationLog.map((x) => x.patronCard).filter(Boolean)).size;
+  const uniqueItemsHandled = new Set(state.circulationLog.map((x) => x.itemBarcode).filter(Boolean)).size;
+  const expiredPatrons = state.patrons.filter((x) => x.status === 'Expired').length;
+  const blockedPatrons = state.patrons.filter((x) => x.status === 'Blocked').length;
+  const pendingAcquisitionItems = state.acquisitions.flatMap((x) => x.items).filter((item) => item.itemStatus === 'Pending').length;
+  const openIll = state.illRequests.filter((x) => x.status !== 'Returned');
+  const illShipped = state.illRequests.filter((x) => x.status === 'Shipped').length;
+  const illReceived = state.illRequests.filter((x) => x.status === 'Received').length;
+  const registerTransactions = state.register.filter((x) => x.entryType === 'transaction');
+  const registerNotes = state.register.filter((x) => x.entryType === 'note');
+  const registerRevenue = registerTransactions.reduce((sum, x) => sum + (Number(x.amount) || 0), 0);
+  const largestTransaction = registerTransactions.reduce((max, x) => Math.max(max, Number(x.amount) || 0), 0);
+  const categoryTotals = registerTransactionCategories.reduce((acc, category) => ({ ...acc, [category]: 0 }), {});
+  registerTransactions.forEach((transaction) => {
+    if (!Object.hasOwn(categoryTotals, transaction.category)) return;
+    categoryTotals[transaction.category] += Number(transaction.amount) || 0;
+  });
+  const topCategoryPair = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
+  const topCategory = topCategoryPair && topCategoryPair[1] > 0 ? `${topCategoryPair[0]} (${money.format(topCategoryPair[1])})` : '—';
+
   byId('reportItems').textContent = state.catalog.length;
   byId('reportAvailableItems').textContent = state.catalog.filter((x) => x.status === 'Available').length;
   byId('reportCheckedOutItems').textContent = state.catalog.filter((x) => x.status === 'Checked Out').length;
+  byId('reportOnHoldItems').textContent = state.catalog.filter((x) => x.status === 'On Hold').length;
+  byId('reportOverdueItems').textContent = state.catalog.filter((x) => x.status === 'Overdue').length;
+  byId('reportWeededItems').textContent = state.catalog.filter((x) => x.status === 'Weeded').length;
   byId('reportNewItems').textContent = state.catalog.filter((x) => x.addedOn === new Date().toISOString().slice(0, 10)).length;
   byId('reportPatrons').textContent = state.patrons.filter((x) => x.status === 'Active').length;
   byId('reportTotalPatrons').textContent = state.patrons.length;
+  byId('reportExpiredPatrons').textContent = expiredPatrons;
+  byId('reportBlockedPatrons').textContent = blockedPatrons;
   byId('reportTransactions').textContent = state.circulationLog.length;
-  byId('reportCheckouts').textContent = state.circulationLog.filter((x) => x.action === 'Check Out').length;
-  byId('reportCheckins').textContent = state.circulationLog.filter((x) => x.action === 'Check In').length;
+  byId('reportCheckouts').textContent = checkouts.length;
+  byId('reportCheckins').textContent = checkins.length;
+  byId('reportNetCirculation').textContent = checkouts.length - checkins.length;
+  byId('reportUniquePatrons').textContent = uniquePatronsServed;
+  byId('reportUniqueItems').textContent = uniqueItemsHandled;
   byId('reportVisitors').textContent = state.visitors;
   byId('reportReferenceQuestions').textContent = state.referenceQuestions;
+  byId('reportVisitorQuestionRatio').textContent = state.referenceQuestions ? (state.visitors / state.referenceQuestions).toFixed(2) : 'N/A';
   byId('reportAcq').textContent = state.acquisitions.filter((x) => x.status !== 'Received').length;
-  byId('reportIllOpen').textContent = state.illRequests.filter((x) => x.status !== 'Returned').length;
+  byId('reportAcqPendingItems').textContent = pendingAcquisitionItems;
+  byId('reportIllOpen').textContent = openIll.length;
+  byId('reportIllBreakdown').textContent = `${openIll.length} / ${illShipped} / ${illReceived}`;
+  byId('reportRegisterTransactions').textContent = registerTransactions.length;
+  byId('reportRegisterNotes').textContent = registerNotes.length;
+  byId('reportRegisterRevenue').textContent = money.format(registerRevenue);
+  byId('reportRegisterLargest').textContent = money.format(largestTransaction);
+  byId('reportRegisterTopCategory').textContent = topCategory;
+  byId('reportRegisterAverage').textContent = registerTransactions.length ? money.format(registerRevenue / registerTransactions.length) : money.format(0);
+  renderVisitHeatmap();
+};
+
+const renderVisitHeatmap = () => {
+  const grid = byId('visitHeatmap');
+  const summary = byId('visitHeatmapSummary');
+  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const hourLabels = ['8a', '10a', '12p', '2p', '4p', '6p', '8p'];
+  const hourBuckets = [8, 10, 12, 14, 16, 18, 20];
+  const matrix = dayLabels.map(() => hourBuckets.map(() => 0));
+
+  state.visitorLog.forEach((entry) => {
+    const timestamp = new Date(entry.timestamp);
+    if (Number.isNaN(timestamp.getTime())) return;
+    const day = timestamp.getDay();
+    const hour = timestamp.getHours();
+    let closestBucket = 0;
+    let closestDistance = Infinity;
+    hourBuckets.forEach((bucketHour, index) => {
+      const distance = Math.abs(bucketHour - hour);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestBucket = index;
+      }
+    });
+    matrix[day][closestBucket] += 1;
+  });
+
+  const maxCount = Math.max(...matrix.flat(), 0);
+  grid.innerHTML = `
+    <div class="heatmap-row heatmap-header">
+      <span class="heatmap-corner">Day/Time</span>
+      ${hourLabels.map((label) => `<span class="heatmap-hour-label">${label}</span>`).join('')}
+    </div>
+    ${matrix.map((counts, dayIndex) => `
+      <div class="heatmap-row">
+        <span class="heatmap-day-label">${dayLabels[dayIndex]}</span>
+        ${counts.map((count, hourIndex) => {
+          const intensity = maxCount ? Math.ceil((count / maxCount) * 4) : 0;
+          return `<span class="heatmap-block heat-${intensity}" title="${dayLabels[dayIndex]} ${hourLabels[hourIndex]}: ${count} visits">${count || ''}</span>`;
+        }).join('')}
+      </div>
+    `).join('')}
+  `;
+
+  if (!state.visitorLog.length) {
+    summary.textContent = 'No visitor activity has been logged yet. Use +1 Visitor to start building this report.';
+    return;
+  }
+
+  const topWindow = matrix.flatMap((counts, dayIndex) => counts.map((count, hourIndex) => ({
+    dayIndex,
+    hourIndex,
+    count
+  }))).sort((a, b) => b.count - a.count)[0];
+
+  if (!topWindow || !topWindow.count) {
+    summary.textContent = 'Visitor activity has been logged, but no high-traffic time windows stand out yet.';
+    return;
+  }
+
+  summary.textContent = `Most visited window: ${dayLabels[topWindow.dayIndex]} around ${hourLabels[topWindow.hourIndex]} (${topWindow.count} visits).`;
 };
 
 const rerender = () => {
@@ -284,6 +387,9 @@ document.querySelectorAll('.report-category-card').forEach((card) => {
 
 byId('globalAddVisitorBtn').addEventListener('click', () => {
   state.visitors += 1;
+  state.visitorLog.push({
+    timestamp: new Date().toISOString()
+  });
   rerender();
 });
 

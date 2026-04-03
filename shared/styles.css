@@ -253,6 +253,49 @@ button.ghost {
   display: block;
 }
 
+.visit-heatmap {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.7rem;
+}
+
+.heatmap-row {
+  display: grid;
+  grid-template-columns: 80px repeat(7, minmax(36px, 1fr));
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.heatmap-corner,
+.heatmap-hour-label,
+.heatmap-day-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.heatmap-hour-label {
+  text-align: center;
+}
+
+.heatmap-block {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #17325d;
+  background: #edf3ff;
+}
+
+.heat-0 { background: #f3f6fd; color: #93a0b7; }
+.heat-1 { background: #dae7ff; }
+.heat-2 { background: #b9d0ff; }
+.heat-3 { background: #88adff; color: #0e2a62; }
+.heat-4 { background: #4f7be3; color: #ffffff; }
+
 .hero {
   display: grid;
   grid-template-columns: 1.3fr 1fr;

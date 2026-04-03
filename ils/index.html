@@ -233,6 +233,14 @@
               <span class="report-category-title">Operations</span>
               <span class="muted">Acquisitions and interlibrary work</span>
             </button>
+            <button class="report-category-card" data-report-category="register">
+              <span class="report-category-title">Register</span>
+              <span class="muted">Desk revenue and transaction mix</span>
+            </button>
+            <button class="report-category-card" data-report-category="traffic">
+              <span class="report-category-title">Visits Heatmap</span>
+              <span class="muted">Most visited days and times</span>
+            </button>
           </div>
 
           <section class="report-category-panel active" data-report-category-panel="collection">
@@ -241,6 +249,9 @@
               <li>Total Items in Catalog: <strong id="reportItems">0</strong></li>
               <li>Available Items: <strong id="reportAvailableItems">0</strong></li>
               <li>Checked Out Items: <strong id="reportCheckedOutItems">0</strong></li>
+              <li>Items On Hold: <strong id="reportOnHoldItems">0</strong></li>
+              <li>Items Overdue: <strong id="reportOverdueItems">0</strong></li>
+              <li>Items Weeded: <strong id="reportWeededItems">0</strong></li>
               <li>New Items Added Today: <strong id="reportNewItems">0</strong></li>
             </ul>
           </section>
@@ -251,6 +262,9 @@
               <li>Total Transactions Logged Today: <strong id="reportTransactions">0</strong></li>
               <li>Check Outs Today: <strong id="reportCheckouts">0</strong></li>
               <li>Check Ins Today: <strong id="reportCheckins">0</strong></li>
+              <li>Net Change (Out - In): <strong id="reportNetCirculation">0</strong></li>
+              <li>Unique Patrons Served: <strong id="reportUniquePatrons">0</strong></li>
+              <li>Unique Items Handled: <strong id="reportUniqueItems">0</strong></li>
             </ul>
           </section>
 
@@ -259,8 +273,11 @@
             <ul>
               <li>Total Patrons: <strong id="reportTotalPatrons">0</strong></li>
               <li>Total Active Patrons: <strong id="reportPatrons">0</strong></li>
+              <li>Expired Patrons: <strong id="reportExpiredPatrons">0</strong></li>
+              <li>Blocked Patrons: <strong id="reportBlockedPatrons">0</strong></li>
               <li>Visitors Today: <strong id="reportVisitors">0</strong></li>
               <li>Reference Questions Today: <strong id="reportReferenceQuestions">0</strong></li>
+              <li>Visitor-to-Question Ratio: <strong id="reportVisitorQuestionRatio">0</strong></li>
             </ul>
           </section>
 
@@ -268,8 +285,29 @@
             <h3>Operations Reports</h3>
             <ul>
               <li>Open Acquisitions Workflows: <strong id="reportAcq">0</strong></li>
+              <li>Pending Acquisitions Items: <strong id="reportAcqPendingItems">0</strong></li>
               <li>Open Interlibrary Loan Requests: <strong id="reportIllOpen">0</strong></li>
+              <li>ILL Requests by Status (Open/Shipped/Received): <strong id="reportIllBreakdown">0 / 0 / 0</strong></li>
             </ul>
+          </section>
+
+          <section class="report-category-panel" data-report-category-panel="register">
+            <h3>Register Reports</h3>
+            <ul>
+              <li>Total Register Transactions: <strong id="reportRegisterTransactions">0</strong></li>
+              <li>Total Register Notes: <strong id="reportRegisterNotes">0</strong></li>
+              <li>Register Revenue Today: <strong id="reportRegisterRevenue">$0.00</strong></li>
+              <li>Largest Single Transaction: <strong id="reportRegisterLargest">$0.00</strong></li>
+              <li>Top Register Category: <strong id="reportRegisterTopCategory">—</strong></li>
+              <li>Average Transaction Amount: <strong id="reportRegisterAverage">$0.00</strong></li>
+            </ul>
+          </section>
+
+          <section class="report-category-panel" data-report-category-panel="traffic">
+            <h3>Visits Heatmap Report</h3>
+            <p class="muted">Darker blocks indicate higher visitor counts by day and time.</p>
+            <div id="visitHeatmap" class="visit-heatmap"></div>
+            <p class="muted" id="visitHeatmapSummary">No visitor activity has been logged yet.</p>
           </section>
         </article>
       </section>
