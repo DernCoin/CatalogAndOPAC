@@ -42,6 +42,13 @@ const ensureAcquisitionShape = (acquisition) => {
 
 const ensureStateShape = () => {
   state.acquisitions = state.acquisitions.map(ensureAcquisitionShape);
+  state.catalog = state.catalog.map((item) => ({
+    materialNumber: '',
+    materialType: 'Book',
+    pricePaid: '',
+    retailPrice: '',
+    ...item
+  }));
 };
 
 const renderKPIs = () => {
@@ -65,21 +72,9 @@ const renderAttention = () => {
 };
 
 const row = (arr) => `<tr>${arr.map((c) => `<td>${c}</td>`).join('')}</tr>`;
-const coverMarkup = (url, title) => (url ? `<img src="${url}" alt="Cover for ${title}" style="width:42px;height:60px;object-fit:cover;border-radius:6px;" />` : '—');
 
 const renderTables = () => {
   byId('circulationTable').querySelector('tbody').innerHTML = state.circulationLog.slice().reverse().map((x) => row([x.time, x.patronCard, x.itemBarcode, `<span class="badge">${x.action}</span>`])).join('');
-  byId('catalogTable').querySelector('tbody').innerHTML = state.catalog.slice().reverse().map((x) => row([
-    coverMarkup(x.coverImageUrl, x.title),
-    x.title,
-    x.author || '—',
-    x.isbn || '—',
-    x.materialType || 'Book',
-    x.status,
-    x.addedOn,
-    `<button class="ghost" data-edit-catalog-id="${x.id}">Edit</button>
-     <button class="ghost" data-delete-catalog-id="${x.id}">Weed</button>`
-  ])).join('');
   byId('acqTable').querySelector('tbody').innerHTML = state.acquisitions.slice().reverse().map((x) => row([
     x.type,
     x.vendor,
@@ -104,12 +99,6 @@ const renderTables = () => {
     item.itemStatus === 'Pending' ? `<button class="ghost" data-add-item-id="${item.id}">Add to Catalog</button>` : 'Added'
   ])).join('');
 
-  byId('catalogTable').querySelectorAll('button[data-edit-catalog-id]').forEach((btn) => {
-    btn.addEventListener('click', () => beginCatalogEdit(btn.dataset.editCatalogId));
-  });
-  byId('catalogTable').querySelectorAll('button[data-delete-catalog-id]').forEach((btn) => {
-    btn.addEventListener('click', () => weedCatalogRecord(btn.dataset.deleteCatalogId));
-  });
   byId('acqItemsTable').querySelectorAll('button[data-add-item-id]').forEach((btn) => {
     btn.addEventListener('click', () => addPendingItemToCatalog(btn.dataset.addItemId));
   });
@@ -162,8 +151,11 @@ const addPendingItemToCatalog = (itemId) => {
     title: item.title,
     author: item.author || '',
     isbn: item.isbn || '',
+    materialNumber: '',
     callNumber: '',
     materialType: item.materialType || 'Book',
+    pricePaid: '',
+    retailPrice: '',
     edition: '',
     publisher: parentAcquisition.vendor || '',
     publicationYear: '',
@@ -233,7 +225,7 @@ byId('circulateBtn').addEventListener('click', () => {
 });
 
 const catalogFieldIds = [
-  'catTitle', 'catAuthor', 'catRecordIsbn', 'catCall', 'catEdition', 'catPublisher', 'catPubPlace', 'catPubYear',
+  'catTitle', 'catAuthor', 'catRecordIsbn', 'catMaterialNumber', 'catCall', 'catPricePaid', 'catRetailPrice', 'catEdition', 'catPublisher', 'catPubPlace', 'catPubYear',
   'catPageCount', 'catCoverUrl', 'catLanguage', 'catSubjects', 'catSeries', 'catCopyCount', 'catLocation', 'catDescription', 'catNotes'
 ];
 
@@ -252,7 +244,10 @@ const beginCatalogEdit = (id) => {
   byId('catTitle').value = item.title || '';
   byId('catAuthor').value = item.author || '';
   byId('catRecordIsbn').value = item.isbn || '';
+  byId('catMaterialNumber').value = item.materialNumber || '';
   byId('catCall').value = item.callNumber || '';
+  byId('catPricePaid').value = item.pricePaid ?? '';
+  byId('catRetailPrice').value = item.retailPrice ?? '';
   byId('catEdition').value = item.edition || '';
   byId('catPublisher').value = item.publisher || '';
   byId('catPubPlace').value = item.placeOfPublication || '';
@@ -275,14 +270,55 @@ const parseSubjects = (raw) => raw.split(',').map((x) => x.trim()).filter(Boolea
 
 byId('cancelEditCatalogBtn').addEventListener('click', resetCatalogForm);
 
+const findCatalogRecord = (rawTerm) => {
+  const term = rawTerm.trim().toLowerCase();
+  if (!term) return null;
+  return state.catalog.find((item) => [item.title, item.isbn, item.materialNumber].some((value) => String(value || '').toLowerCase().includes(term)));
+};
+
+byId('catalogSearchBtn').addEventListener('click', () => {
+  const term = byId('catalogSearchInput').value;
+  const found = findCatalogRecord(term);
+  if (!found) {
+    byId('catalogMessage').textContent = `No record matched "${term.trim()}".`;
+    return;
+  }
+  beginCatalogEdit(found.id);
+});
+
 const weedCatalogRecord = (id) => {
   const item = state.catalog.find((x) => x.id === id);
   if (!item) return;
-  state.catalog = state.catalog.filter((x) => x.id !== id);
+  item.status = 'Weeded';
   byId('catalogMessage').textContent = `Weeded record "${item.title}".`;
+  if (editingCatalogId === id) beginCatalogEdit(id);
+  rerender();
+};
+
+const deleteCatalogRecord = (id) => {
+  const item = state.catalog.find((x) => x.id === id);
+  if (!item) return;
+  state.catalog = state.catalog.filter((x) => x.id !== id);
+  byId('catalogMessage').textContent = `Deleted record "${item.title}".`;
   if (editingCatalogId === id) resetCatalogForm(false);
   rerender();
 };
+
+byId('weedCatalogBtn').addEventListener('click', () => {
+  if (!editingCatalogId) {
+    byId('catalogMessage').textContent = 'Pull up a record first to weed it.';
+    return;
+  }
+  weedCatalogRecord(editingCatalogId);
+});
+
+byId('deleteCatalogBtn').addEventListener('click', () => {
+  if (!editingCatalogId) {
+    byId('catalogMessage').textContent = 'Pull up a record first to delete it.';
+    return;
+  }
+  deleteCatalogRecord(editingCatalogId);
+});
 
 byId('importIsbnBtn').addEventListener('click', async () => {
   const rawIsbn = byId('catImportIsbn').value.trim();
@@ -330,7 +366,10 @@ byId('addCatalogBtn').addEventListener('click', () => {
   const title = byId('catTitle').value.trim();
   const author = byId('catAuthor').value.trim();
   const isbn = byId('catRecordIsbn').value.trim();
+  const materialNumber = byId('catMaterialNumber').value.trim();
   const callNumber = byId('catCall').value.trim();
+  const pricePaid = Number.parseFloat(byId('catPricePaid').value);
+  const retailPrice = Number.parseFloat(byId('catRetailPrice').value);
   const edition = byId('catEdition').value.trim();
   const publisher = byId('catPublisher').value.trim();
   const placeOfPublication = byId('catPubPlace').value.trim();
@@ -348,7 +387,10 @@ byId('addCatalogBtn').addEventListener('click', () => {
   if (!title || !isbn) return;
 
   const payload = {
-    title, author, isbn, callNumber, materialType, edition, publisher, placeOfPublication, publicationYear, pageCount,
+    title, author, isbn, materialNumber, callNumber, materialType,
+    pricePaid: Number.isFinite(pricePaid) ? pricePaid : '',
+    retailPrice: Number.isFinite(retailPrice) ? retailPrice : '',
+    edition, publisher, placeOfPublication, publicationYear, pageCount,
     coverImageUrl, language, subjects, series, copyCount, location, description: description || `${title} by ${author}.`, localNotes
   };
 
