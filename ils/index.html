@@ -14,6 +14,8 @@
         <small>Integrated Library System · Staff Portal</small>
       </div>
       <nav class="nav-links">
+        <button class="ghost" id="globalAddVisitorBtn">+1 Visitor (<span id="topbarVisitorCount">0</span>)</button>
+        <button class="ghost" id="globalAddReferenceBtn">+1 Question (<span id="topbarReferenceCount">0</span>)</button>
         <a href="../opac/index.html">Open OPAC</a>
       </nav>
     </header>
@@ -42,14 +44,15 @@
             <article class="card">
               <h3>Visitors Today</h3>
               <div class="stat" id="visitorCount">0</div>
-              <button class="ghost" id="addVisitorBtn">+1 Visitor</button>
             </article>
             <article class="card">
               <h3>Reference Questions</h3>
               <div class="stat" id="referenceCount">0</div>
-              <button class="ghost" id="addReferenceBtn">+1 Question</button>
             </article>
-            <article class="card"><h3>Circulation Today</h3><div class="stat" id="circulationToday">0</div></article>
+            <article class="card"><h3>Items Checked Out Today</h3><div class="stat" id="checkoutsToday">0</div></article>
+            <article class="card"><h3>Items Checked In Today</h3><div class="stat" id="checkinsToday">0</div></article>
+            <article class="card"><h3>Items Currently on Hold</h3><div class="stat" id="itemsOnHold">0</div></article>
+            <article class="card"><h3>Items Currently Overdue</h3><div class="stat" id="itemsOverdue">0</div></article>
             <article class="card"><h3>New Items Added</h3><div class="stat" id="newItemsToday">0</div></article>
             <article class="card"><h3>Pending Orders</h3><div class="stat" id="pendingOrders">0</div></article>
           </section>

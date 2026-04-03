@@ -54,7 +54,12 @@ const ensureStateShape = () => {
 const renderKPIs = () => {
   byId('visitorCount').textContent = state.visitors;
   byId('referenceCount').textContent = state.referenceQuestions;
-  byId('circulationToday').textContent = state.circulationLog.length;
+  byId('topbarVisitorCount').textContent = state.visitors;
+  byId('topbarReferenceCount').textContent = state.referenceQuestions;
+  byId('checkoutsToday').textContent = state.circulationLog.filter((x) => x.action === 'Check Out').length;
+  byId('checkinsToday').textContent = state.circulationLog.filter((x) => x.action === 'Check In').length;
+  byId('itemsOnHold').textContent = state.catalog.filter((x) => x.status === 'On Hold').length;
+  byId('itemsOverdue').textContent = state.catalog.filter((x) => x.status === 'Overdue').length;
   byId('newItemsToday').textContent = state.catalog.filter((x) => x.addedOn === new Date().toISOString().slice(0, 10)).length;
   byId('pendingOrders').textContent = state.acquisitions.filter((x) => x.status !== 'Received').length;
 };
@@ -195,12 +200,12 @@ document.querySelectorAll('.report-category-card').forEach((card) => {
   });
 });
 
-byId('addVisitorBtn').addEventListener('click', () => {
+byId('globalAddVisitorBtn').addEventListener('click', () => {
   state.visitors += 1;
   rerender();
 });
 
-byId('addReferenceBtn').addEventListener('click', () => {
+byId('globalAddReferenceBtn').addEventListener('click', () => {
   state.referenceQuestions += 1;
   rerender();
 });
