@@ -149,15 +149,14 @@
         </article>
 
         <article id="patrons" class="panel card">
-          <h2>Patrons: Add & Edit Members</h2>
-          <div class="form-grid">
-            <input id="patronCard" placeholder="Card ID" />
-            <input id="patronName" placeholder="Full Name" />
-            <input id="patronEmail" placeholder="Email" />
-            <select id="patronStatus"><option>Active</option><option>Expired</option><option>Blocked</option></select>
-            <button class="primary" id="savePatronBtn">Save Patron</button>
+          <h2>Patrons: Member Records</h2>
+          <p class="muted">Add a new member, or search existing records to edit member details.</p>
+          <div class="search-inline" style="margin-left:0;">
+            <button class="primary" id="openNewMemberModalBtn">Add New Member</button>
+            <input id="patronSearchInput" placeholder="Search card ID, name, phone, or email" />
+            <button class="ghost" id="patronSearchBtn">Pull Up Member</button>
           </div>
-          <table class="table" id="patronTable"><thead><tr><th>Card</th><th>Name</th><th>Email</th><th>Status</th></tr></thead><tbody></tbody></table>
+          <p class="muted" id="patronMessage"></p>
         </article>
 
         <article id="ill" class="panel card">
@@ -252,6 +251,30 @@
       </section>
     </main>
   </div>
+
+  <dialog id="patronModal" class="modal">
+    <div class="modal-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:0.75rem;">
+        <h3 id="patronModalTitle" style="margin:0;">Add New Member</h3>
+        <button class="ghost" id="closePatronModalBtn">Close</button>
+      </div>
+      <div class="form-grid" style="margin-top:0.8rem;">
+        <input id="patronCard" placeholder="Card ID" />
+        <input id="patronFirstName" placeholder="First Name" />
+        <input id="patronMiddleName" placeholder="Middle Name" />
+        <input id="patronLastName" placeholder="Last Name" />
+        <input id="patronBirthday" type="date" placeholder="Birthday" />
+        <input id="patronPhone" placeholder="Phone Number" />
+        <input id="patronEmail" type="email" placeholder="Email" />
+        <input id="patronAddress" placeholder="Address" />
+        <select id="patronStatus"><option>Active</option><option>Expired</option><option>Blocked</option></select>
+      </div>
+      <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.85rem;">
+        <button class="ghost" id="cancelPatronEditBtn">Cancel</button>
+        <button class="primary" id="savePatronBtn">Save Member</button>
+      </div>
+    </div>
+  </dialog>
 
   <script src="../data/catalogSeed.js"></script>
   <script src="./js/app.js"></script>

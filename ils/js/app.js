@@ -29,6 +29,7 @@ let state = loadState();
 const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 const byId = (id) => document.getElementById(id);
 let editingCatalogId = null;
+let editingPatronCardId = null;
 
 const ensureAcquisitionShape = (acquisition) => {
   if (!acquisition.id) acquisition.id = crypto.randomUUID();
@@ -49,6 +50,34 @@ const ensureStateShape = () => {
     retailPrice: '',
     ...item
   }));
+  state.patrons = state.patrons.map((patron) => {
+    const fullName = String(patron.name || '').trim();
+    const nameParts = fullName ? fullName.split(/\s+/) : [];
+    const firstName = patron.firstName || nameParts[0] || '';
+    const lastName = patron.lastName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : '');
+    const middleName = patron.middleName || (nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '');
+    return {
+      cardId: '',
+      firstName: '',
+      middleName: '',
+      lastName: '',
+      birthday: '',
+      phone: '',
+      address: '',
+      email: '',
+      status: 'Active',
+      ...patron,
+      firstName,
+      middleName,
+      lastName
+    };
+  });
+};
+
+const fullPatronName = (patron) => {
+  const parts = [patron.firstName, patron.middleName, patron.lastName].map((part) => String(part || '').trim()).filter(Boolean);
+  if (parts.length) return parts.join(' ');
+  return String(patron.name || '').trim();
 };
 
 const renderKPIs = () => {
@@ -87,7 +116,6 @@ const renderTables = () => {
     x.status,
     x.items.filter((item) => item.itemStatus === 'Pending').length
   ])).join('');
-  byId('patronTable').querySelector('tbody').innerHTML = state.patrons.slice().reverse().map((x) => row([x.cardId, x.name, x.email, x.status])).join('');
   byId('illTable').querySelector('tbody').innerHTML = state.illRequests.slice().reverse().map((x) => row([x.requester, x.title, x.lender, x.status])).join('');
   byId('registerTable').querySelector('tbody').innerHTML = state.register.slice().reverse().map((x) => row([x.date, x.note])).join('');
 
@@ -458,22 +486,117 @@ byId('addAcqItemBtn').addEventListener('click', () => {
   rerender();
 });
 
+const patronFieldIds = [
+  'patronCard',
+  'patronFirstName',
+  'patronMiddleName',
+  'patronLastName',
+  'patronBirthday',
+  'patronPhone',
+  'patronEmail',
+  'patronAddress'
+];
+
+const resetPatronForm = () => {
+  editingPatronCardId = null;
+  patronFieldIds.forEach((id) => (byId(id).value = ''));
+  byId('patronStatus').value = 'Active';
+  byId('patronCard').disabled = false;
+  byId('patronModalTitle').textContent = 'Add New Member';
+};
+
+const openPatronModal = () => byId('patronModal').showModal();
+const closePatronModal = () => byId('patronModal').close();
+
+const findPatronRecord = (rawTerm) => {
+  const term = rawTerm.trim().toLowerCase();
+  if (!term) return null;
+  return state.patrons.find((patron) => [patron.cardId, patron.email, patron.phone, fullPatronName(patron)].some((value) => String(value || '').toLowerCase().includes(term)));
+};
+
+const beginPatronEdit = (cardId) => {
+  const patron = state.patrons.find((x) => x.cardId === cardId);
+  if (!patron) return;
+  editingPatronCardId = cardId;
+  byId('patronCard').value = patron.cardId || '';
+  byId('patronFirstName').value = patron.firstName || '';
+  byId('patronMiddleName').value = patron.middleName || '';
+  byId('patronLastName').value = patron.lastName || '';
+  byId('patronBirthday').value = patron.birthday || '';
+  byId('patronPhone').value = patron.phone || '';
+  byId('patronEmail').value = patron.email || '';
+  byId('patronAddress').value = patron.address || '';
+  byId('patronStatus').value = patron.status || 'Active';
+  byId('patronCard').disabled = true;
+  byId('patronModalTitle').textContent = `Edit Member: ${fullPatronName(patron) || patron.cardId}`;
+  openPatronModal();
+};
+
+byId('openNewMemberModalBtn').addEventListener('click', () => {
+  resetPatronForm();
+  openPatronModal();
+});
+
+byId('patronSearchBtn').addEventListener('click', () => {
+  const searchTerm = byId('patronSearchInput').value;
+  const found = findPatronRecord(searchTerm);
+  if (!found) {
+    byId('patronMessage').textContent = `No member matched "${searchTerm.trim()}".`;
+    return;
+  }
+  byId('patronMessage').textContent = '';
+  beginPatronEdit(found.cardId);
+});
+
+byId('closePatronModalBtn').addEventListener('click', () => {
+  closePatronModal();
+  resetPatronForm();
+});
+
+byId('cancelPatronEditBtn').addEventListener('click', () => {
+  closePatronModal();
+  resetPatronForm();
+});
+
 byId('savePatronBtn').addEventListener('click', () => {
   const cardId = byId('patronCard').value.trim();
-  const name = byId('patronName').value.trim();
+  const firstName = byId('patronFirstName').value.trim();
+  const middleName = byId('patronMiddleName').value.trim();
+  const lastName = byId('patronLastName').value.trim();
+  const birthday = byId('patronBirthday').value;
+  const phone = byId('patronPhone').value.trim();
   const email = byId('patronEmail').value.trim();
+  const address = byId('patronAddress').value.trim();
   const status = byId('patronStatus').value;
-  if (!cardId || !name) return;
+  if (!cardId || !firstName || !lastName) return;
 
   const existing = state.patrons.find((x) => x.cardId === cardId);
   if (existing) {
-    existing.name = name;
+    existing.firstName = firstName;
+    existing.middleName = middleName;
+    existing.lastName = lastName;
+    existing.birthday = birthday;
+    existing.phone = phone;
     existing.email = email;
+    existing.address = address;
     existing.status = status;
+    byId('patronMessage').textContent = `Updated member "${fullPatronName(existing)}".`;
   } else {
-    state.patrons.push({ cardId, name, email, status });
+    state.patrons.push({
+      cardId,
+      firstName,
+      middleName,
+      lastName,
+      birthday,
+      phone,
+      email,
+      address,
+      status
+    });
+    byId('patronMessage').textContent = `Added member "${[firstName, lastName].join(' ')}".`;
   }
-  ['patronCard', 'patronName', 'patronEmail'].forEach((id) => (byId(id).value = ''));
+  closePatronModal();
+  resetPatronForm();
   rerender();
 });
 
