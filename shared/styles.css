@@ -58,6 +58,7 @@ body {
 .nav-links {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem;
 }
 
@@ -69,6 +70,10 @@ body {
   border-radius: 999px;
   font-weight: 600;
   font-size: 0.9rem;
+}
+
+.nav-links button {
+  white-space: nowrap;
 }
 
 .search-inline {
