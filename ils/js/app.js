@@ -30,6 +30,9 @@ const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
 const byId = (id) => document.getElementById(id);
 let editingCatalogId = null;
 let editingPatronCardId = null;
+const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+
+const registerTransactionCategories = ['Printing', 'Faxing', 'New Library Card', 'Fines/Fees', 'Other'];
 
 const ensureAcquisitionShape = (acquisition) => {
   if (!acquisition.id) acquisition.id = crypto.randomUUID();
@@ -70,6 +73,29 @@ const ensureStateShape = () => {
       firstName,
       middleName,
       lastName
+    };
+  });
+  state.register = state.register.map((entry) => {
+    if (entry.entryType) {
+      return {
+        entryType: entry.entryType,
+        date: entry.date || new Date().toISOString().slice(0, 10),
+        timestamp: entry.timestamp || new Date().toISOString(),
+        category: entry.category || '',
+        details: entry.details || '',
+        amount: Number.parseFloat(entry.amount) || 0,
+        note: entry.note || ''
+      };
+    }
+
+    return {
+      entryType: 'note',
+      date: entry.date || new Date().toISOString().slice(0, 10),
+      timestamp: entry.timestamp || new Date().toISOString(),
+      category: '',
+      details: '',
+      amount: 0,
+      note: entry.note || ''
     };
   });
 };
@@ -117,7 +143,18 @@ const renderTables = () => {
     x.items.filter((item) => item.itemStatus === 'Pending').length
   ])).join('');
   byId('illTable').querySelector('tbody').innerHTML = state.illRequests.slice().reverse().map((x) => row([x.requester, x.title, x.lender, x.status])).join('');
-  byId('registerTable').querySelector('tbody').innerHTML = state.register.slice().reverse().map((x) => row([x.date, x.note])).join('');
+  byId('registerTable').querySelector('tbody').innerHTML = state.register.slice().reverse().map((x) => {
+    if (x.entryType === 'transaction') {
+      return row([
+        new Date(x.timestamp).toLocaleString(),
+        'Transaction',
+        x.category,
+        x.details || '—',
+        money.format(Number(x.amount) || 0)
+      ]);
+    }
+    return row([new Date(x.timestamp).toLocaleString(), 'Note', '—', x.note || '—', '—']);
+  }).join('');
 
   const acqItemRows = state.acquisitions.flatMap((acq) => acq.items.map((item) => ({
     orderLabel: `${acq.title} (${acq.vendor})`,
@@ -135,6 +172,22 @@ const renderTables = () => {
   byId('acqItemsTable').querySelectorAll('button[data-add-item-id]').forEach((btn) => {
     btn.addEventListener('click', () => addPendingItemToCatalog(btn.dataset.addItemId));
   });
+};
+
+const renderRegisterTotals = () => {
+  const totals = registerTransactionCategories.reduce((acc, category) => ({ ...acc, [category]: 0 }), {});
+  state.register.forEach((entry) => {
+    if (entry.entryType !== 'transaction') return;
+    if (!Object.hasOwn(totals, entry.category)) return;
+    totals[entry.category] += Number(entry.amount) || 0;
+  });
+
+  byId('registerTotalPrinting').textContent = money.format(totals.Printing);
+  byId('registerTotalFaxing').textContent = money.format(totals.Faxing);
+  byId('registerTotalCards').textContent = money.format(totals['New Library Card']);
+  byId('registerTotalFines').textContent = money.format(totals['Fines/Fees']);
+  byId('registerTotalOther').textContent = money.format(totals.Other);
+  byId('registerTotalAll').textContent = money.format(Object.values(totals).reduce((sum, amount) => sum + amount, 0));
 };
 
 const renderReports = () => {
@@ -158,6 +211,7 @@ const rerender = () => {
   renderKPIs();
   renderAttention();
   renderTables();
+  renderRegisterTotals();
   renderReports();
   renderAcqOrderOptions();
   saveState();
@@ -611,10 +665,34 @@ byId('addIllBtn').addEventListener('click', () => {
   rerender();
 });
 
-byId('saveRegisterBtn').addEventListener('click', () => {
+byId('saveRegisterTxnBtn').addEventListener('click', () => {
+  const category = byId('registerCategory').value;
+  const amount = Number.parseFloat(byId('registerAmount').value);
+  const details = byId('registerDetail').value.trim();
+  if (!category || !Number.isFinite(amount) || amount < 0) return;
+  state.register.push({
+    entryType: 'transaction',
+    date: new Date().toISOString().slice(0, 10),
+    timestamp: new Date().toISOString(),
+    category,
+    details,
+    amount
+  });
+  byId('registerAmount').value = '';
+  byId('registerDetail').value = '';
+  byId('registerCategory').value = 'Printing';
+  rerender();
+});
+
+byId('saveRegisterNoteBtn').addEventListener('click', () => {
   const note = byId('registerNotes').value.trim();
   if (!note) return;
-  state.register.push({ date: new Date().toISOString().slice(0, 10), note });
+  state.register.push({
+    entryType: 'note',
+    date: new Date().toISOString().slice(0, 10),
+    timestamp: new Date().toISOString(),
+    note
+  });
   byId('registerNotes').value = '';
   rerender();
 });

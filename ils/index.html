@@ -173,9 +173,33 @@
 
         <article id="register" class="panel card">
           <h2>Daily Register</h2>
-          <textarea id="registerNotes" rows="5" placeholder="Daily desk notes, incidents, opening/closing notes..."></textarea>
-          <div style="margin-top:0.6rem"><button class="primary" id="saveRegisterBtn">Save Register Entry</button></div>
-          <table class="table" id="registerTable"><thead><tr><th>Date</th><th>Entry</th></tr></thead><tbody></tbody></table>
+          <p class="muted">Track paid desk transactions and notes for the day.</p>
+          <div class="form-grid">
+            <select id="registerCategory">
+              <option value="Printing">Printing</option>
+              <option value="Faxing">Faxing</option>
+              <option value="New Library Card">New Library Card</option>
+              <option value="Fines/Fees">Fines/Fees</option>
+              <option value="Other">Other</option>
+            </select>
+            <input id="registerAmount" type="number" min="0" step="0.01" placeholder="Amount charged" />
+            <input id="registerDetail" placeholder="Transaction detail (pages, recipient, reason...)" />
+            <button class="primary" id="saveRegisterTxnBtn">Add Transaction</button>
+          </div>
+          <div class="grid kpi-grid" style="margin-top:0.8rem;" id="registerTotalsGrid">
+            <article class="card"><h3>Printing</h3><div class="stat" id="registerTotalPrinting">$0.00</div></article>
+            <article class="card"><h3>Faxing</h3><div class="stat" id="registerTotalFaxing">$0.00</div></article>
+            <article class="card"><h3>New Cards</h3><div class="stat" id="registerTotalCards">$0.00</div></article>
+            <article class="card"><h3>Fines/Fees</h3><div class="stat" id="registerTotalFines">$0.00</div></article>
+            <article class="card"><h3>Other</h3><div class="stat" id="registerTotalOther">$0.00</div></article>
+            <article class="card"><h3>Daily Total</h3><div class="stat" id="registerTotalAll">$0.00</div></article>
+          </div>
+          <textarea id="registerNotes" rows="4" placeholder="Daily desk notes, incidents, opening/closing notes..."></textarea>
+          <div style="margin-top:0.6rem"><button class="ghost" id="saveRegisterNoteBtn">Save Note</button></div>
+          <table class="table" id="registerTable">
+            <thead><tr><th>Time</th><th>Type</th><th>Category</th><th>Details</th><th>Amount</th></tr></thead>
+            <tbody></tbody>
+          </table>
         </article>
 
         <article id="admin" class="panel card">
