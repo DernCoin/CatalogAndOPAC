@@ -78,7 +78,13 @@
         </article>
 
         <article id="cataloging" class="panel card">
-          <h2>Cataloging: Add, Import, and Edit Item Records</h2>
+          <div style="display:flex;gap:0.75rem;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+            <h2 style="margin:0;">Cataloging: Add, Import, and Edit Item Records</h2>
+            <div class="search-inline" style="margin-left:0;">
+              <input id="catalogSearchInput" placeholder="Search title, ISBN, or material #" />
+              <button class="ghost" id="catalogSearchBtn">Pull Up Record</button>
+            </div>
+          </div>
           <p class="muted">Use ISBN import to prefill bibliographic data, then save or update the record.</p>
           <div class="form-grid" style="margin-bottom:0.6rem;">
             <input id="catImportIsbn" placeholder="Import ISBN" />
@@ -88,8 +94,11 @@
             <input id="catTitle" placeholder="Title" />
             <input id="catAuthor" placeholder="Author" />
             <input id="catRecordIsbn" placeholder="Record ISBN / Barcode" />
+            <input id="catMaterialNumber" placeholder="Material Number" />
             <input id="catCall" placeholder="Call Number" />
             <select id="catType"><option>Book</option><option>Audiobook</option><option>DVD</option><option>Magazine</option><option>eBook</option></select>
+            <input id="catPricePaid" type="number" min="0" step="0.01" placeholder="Price Paid" />
+            <input id="catRetailPrice" type="number" min="0" step="0.01" placeholder="Retail Price" />
             <input id="catEdition" placeholder="Edition" />
             <input id="catPublisher" placeholder="Publisher" />
             <input id="catPubPlace" placeholder="Place of Publication" />
@@ -103,14 +112,12 @@
             <input id="catLocation" placeholder="Shelf Location / Collection" />
             <button class="primary" id="addCatalogBtn">Save Record</button>
             <button class="ghost" id="cancelEditCatalogBtn">Cancel Edit</button>
+            <button class="ghost" id="weedCatalogBtn">Weed Record</button>
+            <button class="ghost" id="deleteCatalogBtn">Delete Record</button>
           </div>
           <textarea id="catDescription" rows="3" placeholder="Description / abstract"></textarea>
           <textarea id="catNotes" rows="3" placeholder="Local notes (provenance, condition, processing)"></textarea>
           <p class="muted" id="catalogMessage"></p>
-          <table class="table" id="catalogTable">
-            <thead><tr><th>Cover</th><th>Title</th><th>Author</th><th>ISBN</th><th>Type</th><th>Status</th><th>Added</th><th>Actions</th></tr></thead>
-            <tbody></tbody>
-          </table>
         </article>
 
         <article id="acquisitions" class="panel card">
